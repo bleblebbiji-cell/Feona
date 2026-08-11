@@ -49,13 +49,62 @@
             font-family: monospace;
         }
 
-        /* Always-visible Top Left Photo Button Styling */
-        #photoBtn {
+        /* Always-visible Top Left Controls (Photo Button & Music Player) */
+        .top-left-controls {
             position: fixed;
             top: 20px;
             left: 20px;
-            z-index: 100; /* High z-index keeps it above all sections */
-            margin: 0;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+        /* Music Player Styling */
+        #musicPlayer {
+            background: rgba(255, 255, 255, 0.5);
+            padding: 8px 14px;
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        #songTitle {
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: #333333;
+            max-width: 150px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .music-btn-group {
+            display: flex;
+            gap: 6px;
+        }
+
+        .music-btn {
+            background-color: #ffffff;
+            color: #333333;
+            border: none;
+            padding: 5px 10px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .music-btn:hover {
+            background-color: #fff0f3;
+            transform: scale(1.05);
         }
 
         /* Canvas background */
@@ -280,7 +329,19 @@
         <div id="clockTime">--:--:--</div>
     </div>
 
-    <button id="photoBtn" class="btn hidden" onclick="showPhotoLetter()">Photo & Letter</button>
+    <div class="top-left-controls">
+        <button id="photoBtn" class="btn hidden" onclick="showPhotoLetter()">Photo & Letter</button>
+        
+        <div id="musicPlayer">
+            <div id="songTitle">Select a Song</div>
+            <div class="music-btn-group">
+                <button class="music-btn" onclick="prevSong()">⏮</button>
+                <button id="playPauseBtn" class="music-btn" onclick="togglePlayPause()">▶</button>
+                <button class="music-btn" onclick="nextSong()">⏭</button>
+            </div>
+            <audio id="audioElement"></audio>
+        </div>
+    </div>
 
     <canvas id="ballCanvas"></canvas>
 
@@ -291,9 +352,9 @@
     </div>
 
     <div id="section2" class="content-container hidden">
-        <p>Someone left you a letter, would you like to see?</p>
+        <p>Weekly letters for Feona</p>
         <div class="button-group">
-            <button class="btn" onclick="showLetter()">Yes</button> 
+            <button class="btn" onclick="showLetter()">Let me see</button> 
             <button class="btn" onclick="sayGoodbye()">Maybe some other day</button>
         </div>
     </div>
@@ -301,8 +362,11 @@
     <div id="section3" class="content-container hidden">
         <div class="letter-paper">
             <h2>Dear Feona,</h2>
-            <p>yes </p>
-            <p>You can add multiple paragraphs or anything sweet you'd like to share.</p>
+            <p>I would like to thank you for always being by my side, back when we were still together.
+            I know it was hard for us to let each one of ourseleves go through our own ways, but still I love you.
+            </p>
+            <p>Thank you once again for being my saviour when times are rough, i always adored you for taking good care of me, when i say that i fall in love with you each day, I really mean that, I really do.</p>
+            <p>Thank you.</p>
             <p style="text-align: right; margin-top: 30px;">With love,</p>
         </div>
     </div>
@@ -316,9 +380,9 @@
         <div class="photo-letter-card">
             <img src="images/feona.jpg" alt="Special Memory">
             <div class="letter-content">
-                <h2>A Special Moment</h2>
-                <p>Here is a photo to remind you of this wonderful memory.</p>
-                <p>Every picture tells a story, and this one is my favorite.</p>
+                <h2>A Special Person</h2>
+                <p>A photo that always kept me up thinking about you everyday.</p>
+                <p>You were always so beautiful, I'm sorry i did not realize how important you really were to me.</p>
                 <p style="text-align: right; margin-top: 20px;">Always,</p>
                 <div style="text-align: center; margin-top: 15px;">
                     <button class="btn" onclick="goBackFromPhoto()">Back</button>
@@ -328,6 +392,55 @@
     </div>
 
     <script>
+        /* --- Music Playlist Script --- */
+        // Add your music files located in the "music" folder here:
+        const songs = [
+            { title: "Song 1 Title", src: "music/song1.mp3" },
+            { title: "Song 2 Title", src: "music/song2.mp3" },
+            { title: "Song 3 Title", src: "music/song3.mp3" }
+        ];
+
+        let currentSongIndex = 0;
+        const audio = document.getElementById('audioElement');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const songTitle = document.getElementById('songTitle');
+
+        function loadSong(index) {
+            if (songs.length === 0) return;
+            songTitle.textContent = songs[index].title;
+            audio.src = songs[index].src;
+        }
+
+        function togglePlayPause() {
+            if (audio.paused) {
+                audio.play();
+                playPauseBtn.textContent = '⏸';
+            } else {
+                audio.pause();
+                playPauseBtn.textContent = '▶';
+            }
+        }
+
+        function nextSong() {
+            currentSongIndex = (currentSongIndex + 1) % songs.length;
+            loadSong(currentSongIndex);
+            audio.play();
+            playPauseBtn.textContent = '⏸';
+        }
+
+        function prevSong() {
+            currentSongIndex = (currentSongIndex - 1 + songs.length) % songs.length;
+            loadSong(currentSongIndex);
+            audio.play();
+            playPauseBtn.textContent = '⏸';
+        }
+
+        // Auto-play the next track when the song finishes
+        audio.addEventListener('ended', nextSong);
+
+        // Load the initial song on startup
+        loadSong(currentSongIndex);
+
         // Track previous section before visiting the Photo page
         let previousSectionId = 'section2';
 
@@ -357,7 +470,6 @@
             let currentSec = sections.map(id => document.getElementById(id)).find(sec => !sec.classList.contains('hidden'));
 
             if (currentSec) {
-                // Save current section ID before transitioning away, unless we are currently on section 5 (photo section)
                 if (currentSec.id !== 'section5') {
                     previousSectionId = currentSec.id;
                 }
@@ -374,7 +486,6 @@
 
         function goToNextSection() {
             document.getElementById('photoBtn').classList.remove('hidden');
-
             hideCurrentSection(() => {
                 const sec2 = document.getElementById('section2');
                 const canvas = document.getElementById('ballCanvas');

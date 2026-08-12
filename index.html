@@ -49,7 +49,7 @@
             font-family: monospace;
         }
 
-        /* Always-visible Top Left Controls (Photo Button & Music Player) */
+        /* Always-visible Top Left Controls (Photo Button, Suggestion Button & Music Player) */
         .top-left-controls {
             position: fixed;
             top: 20px;
@@ -234,6 +234,21 @@
             margin-bottom: 15px;
         }
 
+        /* Suggestions Paper Input Styling */
+        .suggestion-textarea {
+            width: 100%;
+            height: 200px;
+            border: none;
+            outline: none;
+            resize: vertical;
+            font-family: 'Sacramento', cursive;
+            font-size: 1.8rem;
+            color: #4a4a4a;
+            background: transparent;
+            line-height: 1.5;
+            box-sizing: border-box;
+        }
+
         /* Photo + Letter Section Styling */
         .photo-letter-card {
             background-color: #ffffff;
@@ -377,6 +392,7 @@
 
     <div class="top-left-controls">
         <button id="photoBtn" class="btn hidden" onclick="showPhotoLetter()">Photo & Letter</button>
+        <button id="suggestionsBtn" class="btn hidden" onclick="showSuggestions()">Suggestions</button>
         
         <div id="musicPlayer">
             <div id="songTitle">Select a Song</div>
@@ -423,8 +439,8 @@
     </div>
 
     <div id="section4" class="content-container hidden">
-        <h1>Take care ;)</h1>
-        <p>Have a wonderful day ahead, I love you.</p>
+        <h1>Goodbye</h1>
+        <p>Have a wonderful day ahead.</p>
     </div>
 
     <div id="section5" class="content-container hidden">
@@ -438,6 +454,17 @@
                 <div style="text-align: center; margin-top: 15px;">
                     <button class="btn" onclick="goBackFromPhoto()">Back</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="section6" class="content-container hidden">
+        <div class="letter-paper">
+            <h2>Write Something for the dev</h2>
+            <textarea id="suggestionText" class="suggestion-textarea" placeholder="Write your thoughts or suggestions here..."></textarea>
+            <div style="text-align: center; margin-top: 15px;">
+                <button class="btn" onclick="sendSuggestion()">Give</button>
+                <button class="btn" onclick="goBackFromPhoto()">Back</button>
             </div>
         </div>
     </div>
@@ -478,7 +505,7 @@
         function updateGain() {
             if (gainNode && volumeSlider) {
                 // Multiplies volume up to 3x standard maximum gain
-                gainNode.gain.value = parseFloat(volumeSlider.value) * 10.0;
+                gainNode.gain.value = parseFloat(volumeSlider.value) * 5.0;
             }
         }
 
@@ -535,7 +562,6 @@
 
         // Auto-play next song when track finishes
         audio.addEventListener('ended', nextSong);
-
         // Load initial song on startup
         loadSong(currentSongIndex);
 
@@ -558,13 +584,12 @@
 
         /* --- Section Toggle Script --- */
         let previousSectionId = 'section2';
-
         function hideCurrentSection(callback) {
-            const sections = ['section1', 'section2', 'section3', 'section4', 'section5'];
+            const sections = ['section1', 'section2', 'section3', 'section4', 'section5', 'section6'];
             let currentSec = sections.map(id => document.getElementById(id)).find(sec => !sec.classList.contains('hidden'));
 
             if (currentSec) {
-                if (currentSec.id !== 'section5') {
+                if (currentSec.id !== 'section5' && currentSec.id !== 'section6') {
                     previousSectionId = currentSec.id;
                 }
                 currentSec.classList.add('fade-out');
@@ -580,6 +605,7 @@
 
         function goToNextSection() {
             document.getElementById('photoBtn').classList.remove('hidden');
+            document.getElementById('suggestionsBtn').classList.remove('hidden');
             hideCurrentSection(() => {
                 const sec2 = document.getElementById('section2');
                 const canvas = document.getElementById('ballCanvas');
@@ -614,6 +640,31 @@
                 sec5.style.animation = 'none';
                 setTimeout(() => { sec5.style.opacity = '1'; }, 50);
             });
+        }
+
+        function showSuggestions() {
+            hideCurrentSection(() => {
+                const sec6 = document.getElementById('section6');
+                sec6.classList.remove('hidden');
+                sec6.style.opacity = '0';
+                sec6.style.animation = 'none';
+                setTimeout(() => { sec6.style.opacity = '1'; }, 50);
+            });
+        }
+
+        function sendSuggestion() {
+            const text = document.getElementById('suggestionText').value;
+            if (!text.trim()) {
+                alert("Please enter a message before sending.");
+                return;
+            }
+            
+            // Replace with your email address
+            const developerEmail = "blebleb.biji@gmail.com";
+            const subject = encodeURIComponent("Website Suggestion");
+            const body = encodeURIComponent(text);
+            
+            window.location.href = `mailto:${developerEmail}?subject=${subject}&body=${body}`;
         }
 
         function goBackFromPhoto() {
@@ -651,11 +702,9 @@
             }
             resizeCanvas();
             window.addEventListener('resize', resizeCanvas);
-
             const mouse = { x: null, y: null, radius: 150 };
             window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
             window.addEventListener('mouseleave', () => { mouse.x = null; mouse.y = null; });
-
             class Ball {
                 constructor() {
                     this.x = Math.random() * canvas.width;
@@ -672,7 +721,6 @@
 
                     if (this.x - this.radius < 0 || this.x + this.radius > canvas.width) this.vx *= -1;
                     if (this.y - this.radius < 0 || this.y + this.radius > canvas.height) this.vy *= -1;
-
                     if (mouse.x !== null && mouse.y !== null) {
                         let dx = mouse.x - this.x;
                         let dy = mouse.y - this.y;
@@ -697,7 +745,6 @@
             }
 
             const balls = Array.from({ length: Math.floor((canvas.width * canvas.height) / 15000) }, () => new Ball());
-
             function animate() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 balls.forEach(ball => {

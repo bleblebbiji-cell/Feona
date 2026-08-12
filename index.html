@@ -470,292 +470,315 @@
     </div>
 
     <script>
-        /* --- Music Playlist Script with Audio Booster --- */
-        const songs = [
-            { title: "Sun Bleached Flies", src: "music/Sun Bleached Flies.mp3" },
-            { title: "Waco, Texas", src: "music/Waco Texas.mp3" }
-        ];
+    /* --- Music Playlist Script with Audio Booster --- */
+    const songs = [
+        { title: "Sun Bleached Flies", src: "music/Sun Bleached Flies.mp3" },
+        { title: "Waco, Texas", src: "music/Waco Texas.mp3" }
+    ];
 
-        let currentSongIndex = 0;
-        const audio = document.getElementById('audioElement');
-        const playPauseBtn = document.getElementById('playPauseBtn');
-        const songTitle = document.getElementById('songTitle');
-        const volumeSlider = document.getElementById('volumeSlider');
+    let currentSongIndex = 0;
+    const audio = document.getElementById('audioElement');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const songTitle = document.getElementById('songTitle');
+    const volumeSlider = document.getElementById('volumeSlider');
 
-        // Web Audio API setup to allow volume amplification above 100%
-        let audioCtx;
-        let gainNode;
+    // Web Audio API setup to allow volume amplification above 100%
+    let audioCtx;
+    let gainNode;
 
-        function initAudioContext() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const source = audioCtx.createMediaElementSource(audio);
-                gainNode = audioCtx.createGain();
-                
-                source.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-                
-                updateGain();
-            }
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
+    function initAudioContext() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const source = audioCtx.createMediaElementSource(audio);
+            gainNode = audioCtx.createGain();
+            
+            source.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            updateGain();
         }
-
-        function updateGain() {
-            if (gainNode && volumeSlider) {
-                // Multiplies volume up to 3x standard maximum gain
-                gainNode.gain.value = parseFloat(volumeSlider.value) * 5.0;
-            }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
         }
+    }
 
-        function loadSong(index) {
-            if (songs.length === 0) return;
-            songTitle.textContent = songs[index].title;
-            audio.src = encodeURI(songs[index].src);
-            audio.load();
+    function updateGain() {
+        if (gainNode && volumeSlider) {
+            gainNode.gain.value = parseFloat(volumeSlider.value) * 5.0;
         }
+    }
 
-        function togglePlayPause() {
-            initAudioContext(); // Initialize booster on first interaction
+    function loadSong(index) {
+        if (songs.length === 0) return;
+        songTitle.textContent = songs[index].title;
+        audio.src = encodeURI(songs[index].src);
+        audio.load();
+    }
 
-            if (audio.paused) {
-                audio.play().then(() => {
-                    playPauseBtn.textContent = '⏸';
-                }).catch(error => {
-                    console.error("Playback failed:", error);
-                    playPauseBtn.textContent = '▶';
-                });
-            } else {
-                audio.pause();
+    function togglePlayPause() {
+        initAudioContext();
+
+        if (audio.paused) {
+            audio.play().then(() => {
+                playPauseBtn.textContent = '⏸';
+            }).catch(error => {
+                console.error("Playback failed:", error);
                 playPauseBtn.textContent = '▶';
-            }
+            });
+        } else {
+            audio.pause();
+            playPauseBtn.textContent = '▶';
         }
+    }
 
-        function nextSong() {
-            currentSongIndex = (currentSongIndex + 1) % songs.length;
-            loadSong(currentSongIndex);
-            if (!audio.paused) {
-                audio.play().then(() => { playPauseBtn.textContent = '⏸'; });
-            } else {
-                togglePlayPause();
-            }
-        }
-
-        function prevSong() {
-            currentSongIndex = (currentSongIndex - 1 + songs.length) % songs.length;
-            loadSong(currentSongIndex);
-            if (!audio.paused) {
-                audio.play().then(() => { playPauseBtn.textContent = '⏸'; });
-            } else {
-                togglePlayPause();
-            }
-        }
-
-        function changeVolume(val) {
-            if (gainNode) {
-                updateGain();
-            } else {
-                audio.volume = parseFloat(val);
-            }
-        }
-
-        // Auto-play next song when track finishes
-        audio.addEventListener('ended', nextSong);
-        // Load initial song on startup
+    function nextSong() {
+        currentSongIndex = (currentSongIndex + 1) % songs.length;
         loadSong(currentSongIndex);
-
-        /* --- Real-Time Clock Script --- */
-        function updateClock() {
-            const now = new Date();
-            const options = { weekday: 'short', month: 'short', day: 'numeric' };
-            document.getElementById('clockDate').textContent = now.toLocaleDateString('en-US', options);
-            let timeString = now.toLocaleTimeString('en-US', {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: true
-            });
-            document.getElementById('clockTime').textContent = timeString;
+        if (!audio.paused) {
+            audio.play().then(() => { playPauseBtn.textContent = '⏸'; });
+        } else {
+            togglePlayPause();
         }
+    }
 
-        updateClock();
-        setInterval(updateClock, 1000);
+    function prevSong() {
+        currentSongIndex = (currentSongIndex - 1 + songs.length) % songs.length;
+        loadSong(currentSongIndex);
+        if (!audio.paused) {
+            audio.play().then(() => { playPauseBtn.textContent = '⏸'; });
+        } else {
+            togglePlayPause();
+        }
+    }
 
-        /* --- Section Toggle Script --- */
-        let previousSectionId = 'section2';
-        function hideCurrentSection(callback) {
-            const sections = ['section1', 'section2', 'section3', 'section4', 'section5', 'section6'];
-            let currentSec = sections.map(id => document.getElementById(id)).find(sec => !sec.classList.contains('hidden'));
+    function changeVolume(val) {
+        if (gainNode) {
+            updateGain();
+        } else {
+            audio.volume = parseFloat(val);
+        }
+    }
 
-            if (currentSec) {
-                if (currentSec.id !== 'section5' && currentSec.id !== 'section6') {
-                    previousSectionId = currentSec.id;
-                }
-                currentSec.classList.add('fade-out');
-                setTimeout(() => {
-                    currentSec.classList.add('hidden');
-                    currentSec.classList.remove('fade-out');
-                    if (callback) callback();
-                }, 500);
-            } else if (callback) {
-                callback();
+    audio.addEventListener('ended', nextSong);
+    loadSong(currentSongIndex);
+
+    /* --- Real-Time Clock Script --- */
+    function updateClock() {
+        const now = new Date();
+        const options = { weekday: 'short', month: 'short', day: 'numeric' };
+        document.getElementById('clockDate').textContent = now.toLocaleDateString('en-US', options);
+        let timeString = now.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true
+        });
+        document.getElementById('clockTime').textContent = timeString;
+    }
+
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    /* --- Section Toggle Script --- */
+    let previousSectionId = 'section2';
+
+    function hideCurrentSection(callback) {
+        const sections = ['section1', 'section2', 'section3', 'section4', 'section5', 'section6'];
+        let currentSec = sections.map(id => document.getElementById(id)).find(sec => !sec.classList.contains('hidden'));
+
+        if (currentSec) {
+            if (currentSec.id !== 'section5' && currentSec.id !== 'section6') {
+                previousSectionId = currentSec.id;
             }
+            currentSec.classList.add('fade-out');
+            setTimeout(() => {
+                currentSec.classList.add('hidden');
+                currentSec.classList.remove('fade-out');
+                if (callback) callback();
+            }, 500);
+        } else if (callback) {
+            callback();
         }
+    }
 
-        function goToNextSection() {
-            document.getElementById('photoBtn').classList.remove('hidden');
-            document.getElementById('suggestionsBtn').classList.remove('hidden');
-            hideCurrentSection(() => {
-                const sec2 = document.getElementById('section2');
-                const canvas = document.getElementById('ballCanvas');
-
-                sec2.classList.remove('hidden');
-                sec2.style.opacity = '0';
-                sec2.style.animation = 'none';
-                
-                setTimeout(() => {
-                    sec2.style.opacity = '1';
-                    canvas.style.opacity = '1';
-                    initBallAnimation(); 
-                }, 50);
-            });
-        }
-
-        function showLetter() {
-            hideCurrentSection(() => {
-                const sec3 = document.getElementById('section3');
-                sec3.classList.remove('hidden');
-                sec3.style.opacity = '0';
-                sec3.style.animation = 'none';
-                setTimeout(() => { sec3.style.opacity = '1'; }, 50);
-            });
-        }
-
-        function showPhotoLetter() {
-            hideCurrentSection(() => {
-                const sec5 = document.getElementById('section5');
-                sec5.classList.remove('hidden');
-                sec5.style.opacity = '0';
-                sec5.style.animation = 'none';
-                setTimeout(() => { sec5.style.opacity = '1'; }, 50);
-            });
-        }
-
-        function showSuggestions() {
-            hideCurrentSection(() => {
-                const sec6 = document.getElementById('section6');
-                sec6.classList.remove('hidden');
-                sec6.style.opacity = '0';
-                sec6.style.animation = 'none';
-                setTimeout(() => { sec6.style.opacity = '1'; }, 50);
-            });
-        }
-
-        function sendSuggestion() {
-            const text = document.getElementById('suggestionText').value;
-            if (!text.trim()) {
-                alert("Please enter a message before sending.");
-                return;
-            }
-            
-            // Replace with your email address
-            const developerEmail = "blebleb.biji@gmail.com";
-            const subject = encodeURIComponent("Website Suggestion");
-            const body = encodeURIComponent(text);
-            
-            window.location.href = `mailto:${developerEmail}?subject=${subject}&body=${body}`;
-        }
-
-        function goBackFromPhoto() {
-            hideCurrentSection(() => {
-                const targetSec = document.getElementById(previousSectionId) || document.getElementById('section2');
-                targetSec.classList.remove('hidden');
-                targetSec.style.opacity = '0';
-                targetSec.style.animation = 'none';
-                setTimeout(() => { targetSec.style.opacity = '1'; }, 50);
-            });
-        }
-
-        function sayGoodbye() {
-            hideCurrentSection(() => {
-                const sec4 = document.getElementById('section4');
-                sec4.classList.remove('hidden');
-                sec4.style.opacity = '0';
-                sec4.style.animation = 'none';
-                setTimeout(() => { sec4.style.opacity = '1'; }, 50);
-                setTimeout(() => {
-                    window.close();
-                    window.location.href = "about:blank";
-                }, 2000);
-            });
-        }
-
-        /* --- Interactive Floating Ball Background Script --- */
-        function initBallAnimation() {
+    function goToNextSection() {
+        document.getElementById('photoBtn').classList.remove('hidden');
+        document.getElementById('suggestionsBtn').classList.remove('hidden');
+        hideCurrentSection(() => {
+            const sec2 = document.getElementById('section2');
             const canvas = document.getElementById('ballCanvas');
-            const ctx = canvas.getContext('2d');
 
-            function resizeCanvas() {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
+            sec2.classList.remove('hidden');
+            sec2.style.opacity = '0';
+            sec2.style.animation = 'none';
+            
+            setTimeout(() => {
+                sec2.style.opacity = '1';
+                canvas.style.opacity = '1';
+                initBallAnimation(); 
+            }, 50);
+        });
+    }
+
+    function showLetter() {
+        hideCurrentSection(() => {
+            const sec3 = document.getElementById('section3');
+            sec3.classList.remove('hidden');
+            sec3.style.opacity = '0';
+            sec3.style.animation = 'none';
+            setTimeout(() => { sec3.style.opacity = '1'; }, 50);
+        });
+    }
+
+    function showPhotoLetter() {
+        hideCurrentSection(() => {
+            const sec5 = document.getElementById('section5');
+            sec5.classList.remove('hidden');
+            sec5.style.opacity = '0';
+            sec5.style.animation = 'none';
+            setTimeout(() => { sec5.style.opacity = '1'; }, 50);
+        });
+    }
+
+    function showSuggestions() {
+        hideCurrentSection(() => {
+            const sec6 = document.getElementById('section6');
+            sec6.classList.remove('hidden');
+            sec6.style.opacity = '0';
+            sec6.style.animation = 'none';
+            setTimeout(() => { sec6.style.opacity = '1'; }, 50);
+        });
+    }
+
+    /* --- Direct Email Sending with Auto-Clear --- */
+    function sendSuggestion() {
+        const textarea = document.getElementById('suggestionText');
+        const text = textarea.value;
+
+        if (!text.trim()) {
+            alert("Please enter a message before sending.");
+            return;
+        }
+
+        // Change button state / alert user
+        alert("Sending message, please wait a moment...");
+
+        fetch("https://formsubmit.co/ajax/blebleb.biji@gmail.com", {
+            method: "POST",
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                _subject: "New Message/Suggestion from Website!",
+                Message: text
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert("Thank you! Your message has been sent successfully.");
+            textarea.value = ""; // Clears text area so it's ready for another message
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("Sent! Thank you for writing.");
+            textarea.value = ""; // Clears text area
+        });
+    }
+
+    function goBackFromPhoto() {
+        hideCurrentSection(() => {
+            const targetSec = document.getElementById(previousSectionId) || document.getElementById('section2');
+            targetSec.classList.remove('hidden');
+            targetSec.style.opacity = '0';
+            targetSec.style.animation = 'none';
+            setTimeout(() => { targetSec.style.opacity = '1'; }, 50);
+        });
+    }
+
+    function sayGoodbye() {
+        hideCurrentSection(() => {
+            const sec4 = document.getElementById('section4');
+            sec4.classList.remove('hidden');
+            sec4.style.opacity = '0';
+            sec4.style.animation = 'none';
+            setTimeout(() => { sec4.style.opacity = '1'; }, 50);
+            setTimeout(() => {
+                window.close();
+                window.location.href = "about:blank";
+            }, 2000);
+        });
+    }
+
+    /* --- Interactive Floating Ball Background Script --- */
+    function initBallAnimation() {
+        const canvas = document.getElementById('ballCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        const mouse = { x: null, y: null, radius: 150 };
+        window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
+        window.addEventListener('mouseleave', () => { mouse.x = null; mouse.y = null; });
+
+        class Ball {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.radius = Math.random() * 12 + 3;
+                this.vx = (Math.random() - 0.5) * 1.2;
+                this.vy = (Math.random() - 0.5) * 1.2;
+                this.opacity = Math.random() * 0.5 + 0.4;
             }
-            resizeCanvas();
-            window.addEventListener('resize', resizeCanvas);
-            const mouse = { x: null, y: null, radius: 150 };
-            window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
-            window.addEventListener('mouseleave', () => { mouse.x = null; mouse.y = null; });
-            class Ball {
-                constructor() {
-                    this.x = Math.random() * canvas.width;
-                    this.y = Math.random() * canvas.height;
-                    this.radius = Math.random() * 12 + 3;
-                    this.vx = (Math.random() - 0.5) * 1.2;
-                    this.vy = (Math.random() - 0.5) * 1.2;
-                    this.opacity = Math.random() * 0.5 + 0.4;
-                }
 
-                update() {
-                    this.x += this.vx;
-                    this.y += this.vy;
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
 
-                    if (this.x - this.radius < 0 || this.x + this.radius > canvas.width) this.vx *= -1;
-                    if (this.y - this.radius < 0 || this.y + this.radius > canvas.height) this.vy *= -1;
-                    if (mouse.x !== null && mouse.y !== null) {
-                        let dx = mouse.x - this.x;
-                        let dy = mouse.y - this.y;
-                        let distance = Math.sqrt(dx * dx + dy * dy);
-                        if (distance < mouse.radius) {
-                            let force = (mouse.radius - distance) / mouse.radius;
-                            let angle = Math.atan2(dy, dx);
-                            this.x += Math.cos(angle) * force * 3;
-                            this.y += Math.sin(angle) * force * 3;
-                        }
+                if (this.x - this.radius < 0 || this.x + this.radius > canvas.width) this.vx *= -1;
+                if (this.y - this.radius < 0 || this.y + this.radius > canvas.height) this.vy *= -1;
+
+                if (mouse.x !== null && mouse.y !== null) {
+                    let dx = mouse.x - this.x;
+                    let dy = mouse.y - this.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < mouse.radius) {
+                        let force = (mouse.radius - distance) / mouse.radius;
+                        let angle = Math.atan2(dy, dx);
+                        this.x += Math.cos(angle) * force * 3;
+                        this.y += Math.sin(angle) * force * 3;
                     }
                 }
-
-                draw() {
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
-                    ctx.shadowBlur = 10;
-                    ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
-                    ctx.fill();
-                }
             }
 
-            const balls = Array.from({ length: Math.floor((canvas.width * canvas.height) / 15000) }, () => new Ball());
-            function animate() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                balls.forEach(ball => {
-                    ball.update();
-                    ball.draw();
-                });
-                requestAnimationFrame(animate);
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+                ctx.fill();
             }
-
-            animate();
         }
-    </script>
+
+        const balls = Array.from({ length: Math.floor((canvas.width * canvas.height) / 15000) }, () => new Ball());
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            balls.forEach(ball => {
+                ball.update();
+                ball.draw();
+            });
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    }
+</script>
 </body>
 </html>
